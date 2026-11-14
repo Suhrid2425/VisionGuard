@@ -28,8 +28,18 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "visionguard-self.vercel.app",
-    "visionguard-hsdqug07g-fresher-go.vercel.app",
+    "visionguard-git-main-fresher-go.vercel.app",
 ]
+
+# Automatically allow the current Vercel deployment hostname
+vercel_url = os.getenv("VERCEL_URL")
+vercel_branch_url = os.getenv("VERCEL_BRANCH_URL")
+
+if vercel_url:
+    ALLOWED_HOSTS.append(vercel_url)
+
+if vercel_branch_url:
+    ALLOWED_HOSTS.append(vercel_branch_url)
 
 
 # Application definition
