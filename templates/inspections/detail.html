@@ -1,0 +1,393 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inspection #{{ inspection.id }} | VisionGuard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+          rel="stylesheet">
+
+    <style>
+        body {
+            background: #f4f6fa;
+            color: #172033;
+            font-family: Arial, sans-serif;
+        }
+
+        .navbar {
+            background: #111827;
+        }
+
+        .navbar-brand {
+            color: white;
+            font-weight: 700;
+            letter-spacing: .3px;
+        }
+
+        .page-container {
+            max-width: 1200px;
+            margin: 35px auto;
+            padding: 0 18px;
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid #e5e9f0;
+            border-radius: 14px;
+            padding: 22px;
+            margin-bottom: 22px;
+            box-shadow: 0 3px 12px rgba(20, 30, 50, .04);
+        }
+
+        .status {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .status-normal {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-defective {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-failed {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .image-card {
+            background: white;
+            border: 1px solid #e5e9f0;
+            border-radius: 12px;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .image-card img {
+            width: 100%;
+            height: 270px;
+            object-fit: contain;
+            background: #111827;
+        }
+
+        .image-caption {
+            padding: 14px 16px;
+        }
+
+        .image-caption h6 {
+            margin: 0 0 5px;
+            font-weight: 700;
+        }
+
+        .image-caption p {
+            color: #6b7280;
+            font-size: 13px;
+            margin: 0;
+        }
+
+        .metric {
+            border: 1px solid #e5e9f0;
+            border-radius: 12px;
+            padding: 18px;
+            height: 100%;
+        }
+
+        .metric-label {
+            color: #6b7280;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .metric-value {
+            font-size: 25px;
+            font-weight: 700;
+        }
+
+        .muted {
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .section-title {
+            font-weight: 700;
+            margin-bottom: 18px;
+        }
+
+        @media (max-width: 576px) {
+            .image-card img {
+                height: 220px;
+            }
+
+            .page-container {
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark px-3 py-3">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">VisionGuard</a>
+
+        <div>
+            <a href="/inspections/history/"
+               class="btn btn-outline-light btn-sm me-2">
+                History
+            </a>
+
+            <a href="/inspections/new/"
+               class="btn btn-primary btn-sm">
+                New Inspection
+            </a>
+        </div>
+    </div>
+</nav>
+
+<main class="page-container">
+
+    <!-- Header -->
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">
+                Inspection #{{ inspection.id }}
+            </h3>
+            <p class="text-secondary mb-0">
+                AI-powered industrial visual inspection
+            </p>
+        </div>
+
+        {% if inspection.status == 'completed' %}
+            {% if inspection.predicted_label %}
+                <span class="status status-defective">
+                    DEFECT DETECTED
+                </span>
+            {% elif inspection.predicted_label == False %}
+                <span class="status status-normal">
+                    NORMAL PRODUCT
+                </span>
+            {% else %}
+                <span class="status status-failed">
+                    PREDICTION UNAVAILABLE
+                </span>
+            {% endif %}
+        {% elif inspection.status == 'failed' %}
+            <span class="status status-failed">INSPECTION FAILED</span>
+        {% else %}
+            <span class="status status-failed">
+                {{ inspection.status|upper }}
+            </span>
+        {% endif %}
+    </div>
+
+    {% if inspection.status == 'failed' %}
+
+        <div class="panel">
+            <h5 class="text-danger">Inspection failed</h5>
+            <p class="mb-0">
+                {{ inspection.error_message|default:"An unexpected error occurred." }}
+            </p>
+        </div>
+
+    {% else %}
+
+        <!-- Metrics -->
+        <div class="row g-3 mb-4">
+
+            <div class="col-md-4">
+                <div class="metric bg-white">
+                    <div class="metric-label">Anomaly Score</div>
+                    <div class="metric-value">
+                        {% if inspection.anomaly_score != None %}
+                            {{ inspection.anomaly_score|floatformat:4 }}
+                        {% else %}
+                            —
+                        {% endif %}
+                    </div>
+                    <div class="muted">
+                        Model anomaly score; not a probability.
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="metric bg-white">
+                    <div class="metric-label">Predicted Result</div>
+                    <div class="metric-value fs-4">
+                        {% if inspection.predicted_label %}
+                            Defective
+                        {% elif inspection.predicted_label == False %}
+                            Normal
+                        {% else %}
+                            Unknown
+                        {% endif %}
+                    </div>
+                    <div class="muted">PatchCore classification</div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="metric bg-white">
+                    <div class="metric-label">Predicted Mask Coverage</div>
+                    <div class="metric-value">
+                        {% if inspection.defect_percentage != None %}
+                            {{ inspection.defect_percentage|floatformat:2 }}%
+                        {% else %}
+                            —
+                        {% endif %}
+                    </div>
+                    <div class="muted">
+                        Percentage of pixels marked anomalous in the predicted mask.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Original Image -->
+        <section class="panel">
+            <h5 class="section-title">Original Input Image</h5>
+
+            <div class="row">
+                <div class="col-lg-7">
+                    <div class="image-card">
+                        <img src="{{ inspection.image.url }}"
+                             alt="Original inspection image">
+                        <div class="image-caption">
+                            <h6>Uploaded Product</h6>
+                            <p>Original image submitted for inspection.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- AI Visual Analysis -->
+        <section class="panel">
+            <h5 class="section-title">AI Visual Analysis</h5>
+
+            <div class="row g-4">
+
+                {% if inspection.anomaly_map %}
+                <div class="col-md-6">
+                    <div class="image-card">
+                        <img src="{{ inspection.anomaly_map.url }}"
+                             alt="Anomaly heatmap">
+                        <div class="image-caption">
+                            <h6>Anomaly Heatmap</h6>
+                            <p>
+                                Visualizes regions with higher anomaly responses.
+                                Warmer colors indicate stronger responses.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if inspection.predicted_mask %}
+                <div class="col-md-6">
+                    <div class="image-card">
+                        <img src="{{ inspection.predicted_mask.url }}"
+                             alt="Predicted defect mask">
+                        <div class="image-caption">
+                            <h6>Predicted Defect Mask</h6>
+                            <p>
+                                Binary mask showing pixels classified as anomalous.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if inspection.anomaly_overlay %}
+                <div class="col-md-6">
+                    <div class="image-card">
+                        <img src="{{ inspection.anomaly_overlay.url }}"
+                             alt="Anomaly overlay">
+                        <div class="image-caption">
+                            <h6>Anomaly Overlay</h6>
+                            <p>
+                                Heatmap blended with the original product image
+                                for easier visual interpretation.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+
+            {% if not inspection.anomaly_map and not inspection.predicted_mask and not inspection.anomaly_overlay %}
+                <p class="text-secondary mb-0">
+                    No AI visualization files are available for this inspection.
+                </p>
+            {% endif %}
+        </section>
+
+        <!-- Inspection Information -->
+        <section class="panel">
+            <h5 class="section-title">Inspection Information</h5>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="muted">Product Category</div>
+                    <strong>{{ inspection.category|title }}</strong>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="muted">Inspection ID</div>
+                    <strong>#{{ inspection.id }}</strong>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="muted">Status</div>
+                    <strong>{{ inspection.status|title }}</strong>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="muted">Created At</div>
+                    <strong>{{ inspection.created_at|date:"d M Y, h:i A" }}</strong>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="muted">Last Updated</div>
+                    <strong>{{ inspection.updated_at|date:"d M Y, h:i A" }}</strong>
+                </div>
+            </div>
+        </section>
+
+    {% endif %}
+
+    <div class="d-flex flex-wrap gap-2 mb-5">
+
+    <a href="/inspections/history/" class="btn btn-outline-secondary">
+        Back to History
+    </a>
+
+    <a href="/inspections/new/" class="btn btn-primary">
+        Run New Inspection
+    </a>
+
+    {% if inspection.status == 'completed' %}
+        <a href="{% url 'inspections:download_report' inspection.pk %}"
+           class="btn btn-success">
+            Download PDF Report
+        </a>
+    {% endif %}
+
+</div>
+
+</main>
+
+</body>
+</html>

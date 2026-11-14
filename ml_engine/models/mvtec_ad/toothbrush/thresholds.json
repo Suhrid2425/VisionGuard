@@ -1,0 +1,46 @@
+{
+    "model": "TensorFlow PatchCore",
+    "category": "toothbrush",
+    "calibration_dataset": "MVTec AD toothbrush/train/good held-out calibration split",
+    "calibration_image_count": 12,
+    "random_seed": 42,
+    "test_set_used": false,
+    "image_threshold": 30.59746999740601,
+    "pixel_threshold": 28.09213628768921,
+    "image_threshold_method": "Maximum normal calibration image score multiplied by 1.05",
+    "pixel_threshold_method": "99.9th percentile of normal calibration anomaly-map pixels multiplied by 1.05",
+    "image_threshold_margin": 1.05,
+    "pixel_threshold_margin": 1.05,
+    "pixel_percentile": 99.9,
+    "normal_image_score_statistics": {
+        "minimum": 27.799964904785156,
+        "maximum": 29.14044761657715,
+        "mean": 28.421602249145508,
+        "median": 28.458459854125977,
+        "std": 0.4327651262283325,
+        "p95": 29.07162094116211,
+        "p99": 29.12668228149414
+    },
+    "normal_pixel_statistics": {
+        "minimum": 4.235626220703125,
+        "maximum": 28.05019187927246,
+        "mean": 20.312864303588867,
+        "p99": 25.76463508605957,
+        "p999": 26.75441551208496
+    },
+    "validation_image_scores": [
+        28.240209579467773,
+        28.485376358032227,
+        29.14044761657715,
+        27.812664031982422,
+        29.015308380126953,
+        28.046730041503906,
+        27.799964904785156,
+        28.527759552001953,
+        28.022180557250977,
+        28.431543350219727,
+        28.64234733581543,
+        28.89470863342285
+    ],
+    "limitations": "Calibration uses only held-out normal images. It estimates normal-score thresholds but cannot optimize anomaly sensitivity or establish recall. Calibration reliability depends on sample size."
+}

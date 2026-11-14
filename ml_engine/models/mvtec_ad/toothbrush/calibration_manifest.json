@@ -1,0 +1,22 @@
+{
+    "category": "toothbrush",
+    "calibration_images": [
+        "C:\\1st year\\New folder\\Personal Dev\\Study4u\\VisionGuard\\datasets\\MVTecAD\\toothbrush\\train\\good\\047.png",
+        "C:\\1st year\\New folder\\Personal Dev\\Study4u\\VisionGuard\\datasets\\MVTecAD\\toothbrush\\train\\good\\045.png",
+        "C:\\1st year\\New folder\\Personal Dev\\Study4u\\VisionGuard\\datasets\\MVTecAD\\toothbrush\\train\\good\\012.png",
+        "C:\\1st year\\New folder\\Personal Dev\\Study4u\\VisionGuard\\datasets\\MVTecAD\\toothbrush\\train\\good\\043.png",
+        "C:\\1st year\\New folder\\Personal Dev\\Study4u\\VisionGuard\\datasets\\MVTecAD\\toothbrush\\train\\good\\014.png",
+        "C:\\1st year\\New folder\\Personal Dev\\Study4u\\VisionGuard\\datasets\\MVTecAD\\toothbrush\\train\\good\\058.png",
+        "C:\\1st year\\New folder\\Personal Dev\\Study4u\\VisionGuard\\datasets\\MVTecAD\\toothbrush\\train\\good\\002.png",
+        "C:\\1st year\\New folder\\Personal Dev\\Study4u\\VisionGuard\\datasets\\MVTecAD\\toothbrush\\train\\good\\036.png",
+        "C:\\1st year\\New folder\\Personal Dev\\Study4u\\VisionGuard\\datasets\\MVTecAD\\toothbrush\\train\\good\\033.png",
+        "C:\\1st year\\New folder\\Personal Dev\\Study4u\\VisionGuard\\datasets\\MVTecAD\\toothbrush\\train\\good\\001.png",
+        "C:\\1st year\\New folder\\Personal Dev\\Study4u\\VisionGuard\\datasets\\MVTecAD\\toothbrush\\train\\good\\013.png",
+        "C:\\1st year\\New folder\\Personal Dev\\Study4u\\VisionGuard\\datasets\\MVTecAD\\toothbrush\\train\\good\\008.png"
+    ],
+    "calibration_image_count": 12,
+    "random_seed": 42,
+    "train_ratio": 0.8,
+    "calibration_ratio": 0.19999999999999996,
+    "test_set_used": false
+}

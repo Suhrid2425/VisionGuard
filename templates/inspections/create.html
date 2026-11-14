@@ -1,0 +1,259 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Inspection | VisionGuard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+
+<body>
+
+<div class="main-content">
+
+    <header class="topbar">
+        <div>
+            <span class="breadcrumb">Workspace / AI Inspection / New</span>
+            <h2>New Inspection</h2>
+        </div>
+
+        <a href="/" class="secondary-btn text-decoration-none">
+            <i class="bi bi-arrow-left"></i> Dashboard
+        </a>
+    </header>
+
+    <div class="inspection-heading">
+        <h3>Inspect a Product</h3>
+        <p>Upload a product image to begin AI-powered quality inspection.</p>
+    </div>
+
+    <div class="upload-layout">
+
+        <div class="panel upload-panel">
+
+            <div class="panel-header">
+                <div>
+                    <h5>Product Image</h5>
+                    <small>Select an image for inspection</small>
+                </div>
+                <i class="bi bi-image text-success fs-4"></i>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <label class="form-label">Product Category</label>
+                {{ form.category }}
+
+                <label class="form-label mt-4">Upload Image</label>
+
+                <div class="drop-zone" id="dropZone">
+
+                    <i class="bi bi-cloud-arrow-up"></i>
+
+                    <h5>Drag and drop your image</h5>
+
+                    <p>or click below to browse files</p>
+
+                    <!-- Browse button -->
+                    <button
+                        type="button"
+                        class="secondary-btn"
+                        id="browseButton">
+                        <i class="bi bi-folder2-open"></i>
+                        Browse Images
+                    </button>
+
+                    <!-- Django image input -->
+                    <div class="image-input-wrapper">
+                        {{ form.image }}
+                    </div>
+
+                    <small>Supported formats: JPG, PNG · Maximum 10 MB</small>
+
+                    <!-- Image preview -->
+                    <div id="previewContainer" style="display: none;">
+
+                        <img
+                            id="imagePreview"
+                            alt="Product preview"
+                            style="max-width: 100%; max-height: 250px; border-radius: 10px; margin-top: 15px;"
+                        >
+
+                        <p id="fileName" class="mt-2"></p>
+
+                        <button
+                            type="button"
+                            class="secondary-btn"
+                            id="removeImageButton">
+                            <i class="bi bi-trash"></i>
+                            Remove Image
+                        </button>
+
+                    </div>
+
+                </div>
+
+                {% if form.errors %}
+                    <div class="alert alert-danger mt-3">
+                        {{ form.errors }}
+                    </div>
+                {% endif %}
+
+                <button type="submit" class="primary-btn w-100 mt-4">
+                    <i class="bi bi-cpu"></i>
+                    Create Inspection
+                </button>
+
+            </form>
+        </div>
+
+        <div class="panel guidelines-panel">
+
+            <h5>Inspection Guidelines</h5>
+
+            <div class="guideline">
+                <i class="bi bi-camera"></i>
+                <div>
+                    <strong>Image Quality</strong>
+                    <p>Use clear, high-resolution product images.</p>
+                </div>
+            </div>
+
+            <div class="guideline">
+                <i class="bi bi-lightbulb"></i>
+                <div>
+                    <strong>Lighting</strong>
+                    <p>Ensure adequate lighting and visibility.</p>
+                </div>
+            </div>
+
+            <div class="guideline">
+                <i class="bi bi-bounding-box"></i>
+                <div>
+                    <strong>Product Position</strong>
+                    <p>Keep the product clearly visible in the frame.</p>
+                </div>
+            </div>
+
+            <div class="model-notice">
+                <i class="bi bi-info-circle"></i>
+                <strong>AI Engine</strong>
+                <p>VisionGuard uses category-specific PatchCore models to detect product anomalies across all 15 MVTec AD categories.</p>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const input = document.getElementById("id_image");
+    const browseButton = document.getElementById("browseButton");
+    const dropZone = document.getElementById("dropZone");
+    const preview = document.getElementById("imagePreview");
+    const previewContainer = document.getElementById("previewContainer");
+    const fileName = document.getElementById("fileName");
+    const removeButton = document.getElementById("removeImageButton");
+
+    if (!input || !browseButton || !dropZone) {
+        console.error("VisionGuard: Required upload elements were not found.");
+        return;
+    }
+
+    // Open native file picker.
+    browseButton.addEventListener("click", function () {
+        input.click();
+    });
+
+    // Display selected image.
+    function showPreview(file) {
+
+        if (!file) return;
+
+        const allowedTypes = ["image/jpeg", "image/png"];
+        const maxSize = 10 * 1024 * 1024;
+
+        if (!allowedTypes.includes(file.type)) {
+            alert("Please select a JPG or PNG image.");
+            input.value = "";
+            return;
+        }
+
+        if (file.size > maxSize) {
+            alert("Image size must be below 10 MB.");
+            input.value = "";
+            return;
+        }
+
+        // Release previous preview URL.
+        if (preview.dataset.objectUrl) {
+            URL.revokeObjectURL(preview.dataset.objectUrl);
+        }
+
+        const imageUrl = URL.createObjectURL(file);
+
+        preview.src = imageUrl;
+        preview.dataset.objectUrl = imageUrl;
+
+        fileName.textContent = file.name;
+        previewContainer.style.display = "block";
+    }
+
+    // Handle file selection.
+    input.addEventListener("change", function () {
+        showPreview(input.files[0]);
+    });
+
+    // Drag over.
+    dropZone.addEventListener("dragover", function (event) {
+        event.preventDefault();
+        dropZone.classList.add("drag-active");
+    });
+
+    // Drag leave.
+    dropZone.addEventListener("dragleave", function (event) {
+        if (!dropZone.contains(event.relatedTarget)) {
+            dropZone.classList.remove("drag-active");
+        }
+    });
+
+    // Drop file.
+    dropZone.addEventListener("drop", function (event) {
+        event.preventDefault();
+        dropZone.classList.remove("drag-active");
+
+        const files = event.dataTransfer.files;
+
+        if (files.length > 0) {
+            input.files = files;
+            showPreview(files[0]);
+        }
+    });
+
+    // Remove selected image.
+    removeButton.addEventListener("click", function () {
+
+        input.value = "";
+
+        if (preview.dataset.objectUrl) {
+            URL.revokeObjectURL(preview.dataset.objectUrl);
+            delete preview.dataset.objectUrl;
+        }
+
+        preview.src = "";
+        fileName.textContent = "";
+        previewContainer.style.display = "none";
+    });
+
+});
+</script>
+
+</body>
+</html>

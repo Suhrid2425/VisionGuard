@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+.venv/
+.venv-tf/
+venv/
+env/
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+
+# Datasets
+datasets/
+
+# Temporary files
+*.log
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# Legacy PyTorch archive (temporary)
+ml_engine/_legacy_pytorch_archive/
+
+# VisionGuard generated files
+ml_engine/models/backup_bottle/
+ml_engine/models/mvtec_ad_full_training_backup/
+ml_engine/evaluation/
+results/
+*.log
+
+# Local development
+__pycache__/
+*.pyc
+.env
+.env.*
+
+# Backups and generated evaluation artifacts
+*.backup
+ml_engine/code_backups/
+ml_engine/evaluation_results/
+ml_engine/test_outputs/
+
+# Legacy model artifacts
+ml_engine/models/bottle_memory_bank.npz
+ml_engine/models/bottle_thresholds.json

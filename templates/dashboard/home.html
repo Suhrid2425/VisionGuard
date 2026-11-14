@@ -1,0 +1,631 @@
+
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VisionGuard | Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        .activity-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .activity-date {
+            width: 58px;
+            flex-shrink: 0;
+        }
+
+        .activity-date strong {
+            display: block;
+            font-size: 13px;
+        }
+
+        .activity-date small {
+            color: #8993a4;
+            font-size: 11px;
+        }
+
+        .activity-track {
+            flex: 1;
+            height: 10px;
+            background: #edf0f5;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .activity-bar {
+            height: 100%;
+            background: #2563eb;
+            border-radius: 20px;
+            transition: width 0.3s ease;
+        }
+
+        .activity-count {
+            min-width: 25px;
+            text-align: right;
+            font-size: 13px;
+        }
+
+        .engine-badge {
+            white-space: nowrap;
+        }
+
+        .engine-badge.ready {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .engine-badge.not-ready {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .engine-info > div {
+            margin-bottom: 13px;
+        }
+
+        .engine-info > div:last-child {
+            margin-bottom: 0;
+        }
+
+        .engine-info span {
+            display: block;
+        }
+
+        .recent-table {
+            margin-bottom: 0;
+        }
+
+        .recent-table th {
+            font-size: 12px;
+            color: #7b8494;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .recent-table td {
+            font-size: 13px;
+            vertical-align: middle;
+        }
+
+        .result-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .result-normal {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .result-defect {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .result-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .result-failed {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .result-processing {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 35px 15px;
+        }
+
+        .empty-state > i {
+            font-size: 35px;
+            color: #94a3b8;
+        }
+
+        .empty-state h6 {
+            margin-top: 12px;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .recent-table {
+                min-width: 700px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+
+        <div class="brand">
+            <div class="brand-icon">
+                <i class="bi bi-eye-fill"></i>
+            </div>
+
+            <div>
+                <h4>VisionGuard</h4>
+                <small>INTELLIGENCE PLATFORM</small>
+            </div>
+        </div>
+
+        <div class="nav-label">WORKSPACE</div>
+
+        <a href="{% url 'dashboard:home' %}" class="nav-item active">
+            <i class="bi bi-grid-1x2-fill"></i>
+            Dashboard
+        </a>
+
+        <a href="{% url 'inspections:create' %}" class="nav-item">
+            <i class="bi bi-camera-fill"></i>
+            AI Inspection
+        </a>
+
+        <a href="{% url 'inspections:history' %}" class="nav-item">
+            <i class="bi bi-clock-history"></i>
+            Inspection History
+        </a>
+
+        <div class="nav-label">INTELLIGENCE</div>
+
+        <a href="#" class="nav-item">
+            <i class="bi bi-bar-chart-fill"></i>
+            Analytics
+        </a>
+
+        <a href="#" class="nav-item">
+            <i class="bi bi-cpu-fill"></i>
+            Model Management
+        </a>
+
+        <div class="sidebar-bottom">
+
+            <div class="system-status">
+                <span class="status-dot"></span>
+
+                {% if all_models_ready %}
+                    PATCHCORE MODEL READY
+                {% else %}
+                    MODEL NOT CONFIGURED
+                {% endif %}
+            </div>
+
+            <div class="profile">
+                <div class="avatar">VG</div>
+
+                <div>
+                    <strong>Administrator</strong>
+                    <small>System Admin</small>
+                </div>
+            </div>
+
+        </div>
+
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+
+            <div>
+                <span class="breadcrumb">Workspace / Overview</span>
+                <h2>Dashboard</h2>
+            </div>
+
+            <div class="top-actions">
+
+                <span class="live-indicator">
+                    <span class="status-dot"></span>
+                    System Operational
+                </span>
+
+                <button class="icon-btn" type="button">
+                    <i class="bi bi-bell"></i>
+                </button>
+
+                <div class="avatar">VG</div>
+
+            </div>
+
+        </header>
+
+        <!-- WELCOME SECTION -->
+        <section class="welcome-section">
+
+            <div>
+                <h3>Industrial Intelligence Overview</h3>
+
+                <p>
+                    Monitor product quality and detect anomalies
+                    with AI-powered visual inspection.
+                </p>
+            </div>
+
+            <a href="{% url 'inspections:create' %}"
+               class="primary-btn text-decoration-none">
+
+                <i class="bi bi-plus-lg"></i>
+                New Inspection
+
+            </a>
+
+        </section>
+
+        <!-- STATISTICS -->
+        <section class="stats-grid">
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+                    <span>Total Inspections</span>
+                    <i class="bi bi-camera"></i>
+                </div>
+
+                <h2>{{ total_inspections }}</h2>
+
+                <small>All-time database records</small>
+
+            </div>
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+                    <span>Defects Detected</span>
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+
+                <h2>{{ defects_detected }}</h2>
+
+                <small>Completed anomalous inspections</small>
+
+            </div>
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+                    <span>Quality Rate</span>
+                    <i class="bi bi-shield-check"></i>
+                </div>
+
+                <h2>{{ quality_rate }}%</h2>
+
+                <small>Normal results among classified inspections</small>
+
+            </div>
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+                    <span>Active Models</span>
+                    <i class="bi bi-cpu"></i>
+                </div>
+
+                <h2>{{ active_models }}</h2>
+
+                <small>Available trained model artifacts</small>
+
+            </div>
+
+        </section>
+
+        <!-- ACTIVITY AND AI ENGINE -->
+        <section class="content-grid">
+
+            <!-- INSPECTION ACTIVITY -->
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <h5>Inspection Activity</h5>
+                        <small>Inspection volume over the last seven days</small>
+                    </div>
+
+                    <span class="panel-tag">LIVE DATABASE</span>
+
+                </div>
+
+                <div class="chart-placeholder">
+
+                    {% for item in activity %}
+
+                        <div class="activity-row">
+
+                            <div class="activity-date">
+                                <strong>{{ item.day }}</strong>
+                                <small>{{ item.date }}</small>
+                            </div>
+
+                            <div class="activity-track">
+
+                                <div class="activity-bar"
+                                     style="width: {{ item.bar_width }}%;">
+                                </div>
+
+                            </div>
+
+                            <strong class="activity-count">
+                                {{ item.count }}
+                            </strong>
+
+                        </div>
+
+                    {% empty %}
+
+                        <p class="text-muted">
+                            No inspection activity available.
+                        </p>
+
+                    {% endfor %}
+
+                    <small class="text-muted">
+                        Counts are calculated from actual inspection records.
+                    </small>
+
+                </div>
+
+            </div>
+
+            <!-- AI ENGINE -->
+            <div class="panel">
+
+                <div class="panel-header">
+
+                    <div>
+                        <h5>AI Engine</h5>
+                        <small>Model configuration</small>
+                    </div>
+
+                    <i class="bi bi-three-dots"></i>
+
+                </div>
+
+                <div class="engine-card">
+
+                    <div class="engine-icon">
+                        <i class="bi bi-cpu-fill"></i>
+                    </div>
+
+                    <div>
+                        <strong>PatchCore</strong>
+                        <small>Industrial Anomaly Detection</small>
+                    </div>
+
+                    <span class="engine-badge {% if all_models_ready %}ready{% else %}not-ready{% endif %}">
+                        {% if all_models_ready %}
+                            READY
+                        {% else %}
+                            NOT READY
+                        {% endif %}
+                    </span>
+
+                </div>
+
+                <div class="engine-info">
+
+                    <div>
+                        <span>Framework</span>
+                        <strong>TensorFlow / Keras</strong>
+                    </div>
+
+                    <div>
+                        <span>Feature Extractor</span>
+                        <strong>ResNet50 (ImageNet)</strong>
+                    </div>
+
+                    <div>
+                        <span>Architecture</span>
+                        <strong>PatchCore + Memory Bank</strong>
+                    </div>
+
+                    <div>
+                        <span>Inference</span>
+
+                        <strong>
+                            {% if all_models_ready %}
+                                Configured
+                            {% else %}
+                                Model artifacts missing
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                    <div>
+                        <span>Supported Categories</span>
+                        <strong>{{ active_models }} / {{ total_models }} categories ready</strong>
+                    </div>
+
+                    <div>
+                        <span>Model Status</span>
+
+                        <strong>
+                            {% if all_models_ready %}
+                                Artifacts available
+                            {% else %}
+                                Not configured
+                            {% endif %}
+                        </strong>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- RECENT INSPECTIONS -->
+        <section class="panel recent-panel">
+
+            <div class="panel-header">
+
+                <div>
+                    <h5>Recent Inspections</h5>
+                    <small>Latest quality inspection records</small>
+                </div>
+
+                <a href="{% url 'inspections:history' %}">
+                    View all
+                    <i class="bi bi-arrow-right"></i>
+                </a>
+
+            </div>
+
+            {% if recent_inspections %}
+
+                <div class="table-responsive">
+
+                    <table class="table recent-table align-middle">
+
+                        <thead>
+                            <tr>
+                                <th>Inspection ID</th>
+                                <th>Category</th>
+                                <th>Status</th>
+                                <th>Result</th>
+                                <th>Anomaly Score</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            {% for inspection in recent_inspections %}
+
+                                <tr>
+
+                                    <td>
+                                        <strong>#{{ inspection.id }}</strong>
+                                    </td>
+
+                                    <td>
+                                        {{ inspection.get_category_display }}
+                                    </td>
+
+                                    <td>
+                                        {{ inspection.get_status_display }}
+                                    </td>
+
+                                    <td>
+
+                                        {% if inspection.status == "completed" %}
+
+                                            {% if inspection.predicted_label %}
+                                                <span class="result-badge result-defect">
+                                                    Defect
+                                                </span>
+                                            {% else %}
+                                                <span class="result-badge result-normal">
+                                                    Normal
+                                                </span>
+                                            {% endif %}
+
+                                        {% elif inspection.status == "failed" %}
+
+                                            <span class="result-badge result-failed">
+                                                Failed
+                                            </span>
+
+                                        {% elif inspection.status == "processing" %}
+
+                                            <span class="result-badge result-processing">
+                                                Processing
+                                            </span>
+
+                                        {% else %}
+
+                                            <span class="result-badge result-pending">
+                                                Pending
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+                                    <td>
+                                        {% if inspection.anomaly_score != None %}
+                                            {{ inspection.anomaly_score|floatformat:3 }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {{ inspection.created_at|date:"d M Y, H:i" }}
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            {% else %}
+
+                <div class="empty-state">
+
+                    <i class="bi bi-images"></i>
+
+                    <h6>No inspections yet</h6>
+
+                    <p>
+                        Upload your first product image to start
+                        AI-powered inspection.
+                    </p>
+
+                    <a href="{% url 'inspections:create' %}"
+                       class="secondary-btn text-decoration-none">
+
+                        Start First Inspection
+
+                    </a>
+
+                </div>
+
+            {% endif %}
+
+        </section>
+
+        <!-- FOOTER -->
+        <footer>
+            VisionGuard © 2026 · Industrial AI Intelligence Platform
+        </footer>
+
+    </main>
+
+</div>
+
+</body>
+</html>
+
+
