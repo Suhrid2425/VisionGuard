@@ -28,8 +28,7 @@ ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
     "visionguard-self.vercel.app",
-    "visionguard-git-main-fresher-go.vercel.app",
-    "visionguard-hcnkzofyo-fresher-go.vercel.app",
+    "visionguard-hsdqug07g-fresher-go.vercel.app",
 ]
 
 
