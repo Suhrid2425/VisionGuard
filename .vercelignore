@@ -1,0 +1,17 @@
+.venv-tf
+.venv
+venv
+.git
+__pycache__
+*.pyc
+.env
+.env.*
+datasets
+media
+results
+staticfiles
+ml_engine/code_backups
+ml_engine/evaluation_results
+ml_engine/test_outputs
+ml_engine/models/backup_bottle
+ml_engine/models/mvtec_ad_full_training_backup
