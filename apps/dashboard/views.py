@@ -5,20 +5,15 @@ from django.shortcuts import render
 
 
 def home(request):
-    # ---------------------------------------------------------
-    # 1. Temporary dashboard statistics
-    # Database queries are disabled for Vercel deployment.
-    # ---------------------------------------------------------
+    # Temporary dashboard statistics
     total_inspections = 0
     defects_detected = 0
     quality_rate = 0.0
     classified_count = 0
 
-    # ---------------------------------------------------------
-    # 2. Check whether trained PatchCore models exist
-    # ---------------------------------------------------------
+    # Locate trained PatchCore model artifacts
     project_root = Path(__file__).resolve().parents[2]
-    model_directory = project_root / "ml_engine" / "models"
+    model_directory = project_root / "ml_engine" / "models" / "mvtec_ad"
 
     categories = [
         "bottle", "cable", "capsule", "carpet", "grid",
@@ -29,24 +24,24 @@ def home(request):
     ready_categories = []
 
     for category in categories:
-        if category == "bottle":
-            memory_bank = model_directory / "bottle_memory_bank.npz"
-            thresholds = model_directory / "bottle_thresholds.json"
-        else:
-            category_directory = model_directory / "mvtec_ad" / category
-            memory_bank = category_directory / "memory_bank.npz"
-            thresholds = category_directory / "thresholds.json"
+        category_directory = model_directory / category
 
-        if memory_bank.is_file() and thresholds.is_file():
+        memory_bank = category_directory / "memory_bank.npz"
+        thresholds = category_directory / "thresholds.json"
+        manifest = category_directory / "calibration_manifest.json"
+
+        if (
+            memory_bank.is_file()
+            and thresholds.is_file()
+            and manifest.is_file()
+            and memory_bank.stat().st_size > 0
+        ):
             ready_categories.append(category)
 
     active_models = len(ready_categories)
     total_models = len(categories)
     all_models_ready = active_models == total_models
 
-    # ---------------------------------------------------------
-    # 3. Temporary seven-day activity
-    # ---------------------------------------------------------
     activity = [
         {
             "day": day,
@@ -57,14 +52,8 @@ def home(request):
         for day in ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     ]
 
-    # ---------------------------------------------------------
-    # 4. Recent inspections unavailable without a database
-    # ---------------------------------------------------------
     recent_inspections = []
 
-    # ---------------------------------------------------------
-    # 5. Dashboard context
-    # ---------------------------------------------------------
     context = {
         "total_inspections": total_inspections,
         "defects_detected": defects_detected,
