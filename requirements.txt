@@ -11,6 +11,7 @@ cloudpickle==3.1.2
 contourpy==1.4.0
 cryptography==50.0.2
 cycler==0.12.1
+dj-database-url==3.1.2
 Django==6.1.1
 flatbuffers==25.12.19
 fonttools==4.68.0
@@ -41,6 +42,8 @@ optree==0.20.0
 packaging==26.3
 pillow==13.0.0
 protobuf==7.36.2
+psycopg==3.3.9
+psycopg-binary==3.3.9
 pycparser==3.12
 pydantic==2.14.3
 pydantic_core==2.50.4
