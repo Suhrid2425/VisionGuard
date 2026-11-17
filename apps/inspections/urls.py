@@ -13,4 +13,9 @@ urlpatterns = [
     download_inspection_report,
     name='download_report',
 ),
+path(
+    'media/<path:name>',
+    views.private_media,
+    name='private_media',
+),
 ]

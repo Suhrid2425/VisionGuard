@@ -9,7 +9,6 @@ __pycache__
 datasets
 media
 results
-staticfiles
 ml_engine/code_backups
 ml_engine/evaluation_results
 ml_engine/test_outputs

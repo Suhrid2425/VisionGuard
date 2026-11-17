@@ -179,9 +179,9 @@ class InspectionTests(TestCase):
         self.assertFalse(form.is_valid())
         self.assertIn("image", form.errors)
 
-    def test_only_bottle_category_is_allowed(self):
+    def test_invalid_category_is_rejected(self):
         form = InspectionForm(
-            data={"category": "cable"},
+            data={"category": "invalid_category"},
             files={"image": self.create_test_image()},
         )
 

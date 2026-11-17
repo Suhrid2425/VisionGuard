@@ -1,16 +1,19 @@
 
 import logging
+import mimetypes
 import os
+import tempfile
 from datetime import timedelta
 from io import BytesIO
 
 import numpy as np
 from PIL import Image, ImageOps
-
+from vercel.blob import BlobNotFoundError
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.db.models import Count, Q
 from django.db.models.functions import TruncDate
-from django.http import HttpResponse
+from django.http import FileResponse, Http404, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
@@ -57,11 +60,35 @@ def create_inspection(request):
 
             try:
 
-                # 1. Run TensorFlow/Keras PatchCore inference.
-                result = predict_image(
-                    image_path=inspection.image.path,
-                    category=inspection.category,
-                )
+                # 1. Download the uploaded image from private Blob storage.
+                # Vercel's application filesystem is read-only, so use /tmp.
+                with inspection.image.open('rb') as uploaded_image:
+                    image_bytes = uploaded_image.read()
+
+                image_suffix = os.path.splitext(inspection.image.name)[1] or '.png'
+
+                with tempfile.NamedTemporaryFile(
+                    suffix=image_suffix,
+                    delete=False,
+                ) as temp_image:
+                    temp_image.write(image_bytes)
+                    temp_image_path = temp_image.name
+
+                try:
+                    # 2. Run TensorFlow/Keras PatchCore inference.
+                    result = predict_image(
+                        image_path=temp_image_path,
+                        category=inspection.category,
+                    )
+
+                    # Keep a fully loaded copy in memory for visualization.
+                    with Image.open(temp_image_path) as source:
+                        original_image = source.convert('RGB')
+
+                finally:
+                    # Always remove the temporary file from /tmp.
+                    if os.path.exists(temp_image_path):
+                        os.remove(temp_image_path)
 
                 # 2. Validate anomaly score.
                 anomaly_score = float(result['anomaly_score'])
@@ -121,10 +148,6 @@ def create_inspection(request):
                 # Store validated prediction values.
                 inspection.anomaly_score = anomaly_score
                 inspection.predicted_label = bool(predicted_label)
-
-                # 7. Load the original uploaded image.
-                with Image.open(inspection.image.path) as source:
-                    original_image = source.convert('RGB')
 
                 original_size = original_image.size
 
@@ -314,6 +337,39 @@ def create_inspection(request):
         {'form': form},
     )
 
+
+
+# ============================================================
+# PRIVATE BLOB IMAGE PROXY
+# ============================================================
+
+def private_media(request, name):
+    """Serve only image files referenced by an Inspection record.
+
+    The Blob store remains private. This Django endpoint is intentionally
+    accessible to visitors who can access an inspection page.
+    """
+    allowed_file = Inspection.objects.filter(
+        Q(image=name)
+        | Q(anomaly_map=name)
+        | Q(predicted_mask=name)
+        | Q(anomaly_overlay=name)
+    ).exists()
+
+    if not allowed_file:
+        raise Http404('Image not found.')
+
+    try:
+        image_file = default_storage.open(name, 'rb')
+    except BlobNotFoundError:
+        logger.exception('Could not read private Blob image: %s', name)
+        raise Http404('Image not found.')
+
+    content_type = mimetypes.guess_type(name)[0] or 'application/octet-stream'
+    response = FileResponse(image_file, content_type=content_type)
+    response['Cache-Control'] = 'private, max-age=300'
+    response['X-Content-Type-Options'] = 'nosniff'
+    return response
 
 
 # ============================================================
@@ -756,21 +812,32 @@ def download_inspection_report(request, pk):
         )
     )
 
-    if inspection.image and os.path.exists(inspection.image.path):
+    if inspection.image and inspection.image.name:
+        try:
+            with inspection.image.open('rb') as image_file:
+                original_image_bytes = image_file.read()
 
-        original_image = RLImage(
-            inspection.image.path,
-            width=115 * mm,
-            height=78 * mm,
-            kind='proportional',
-        )
+            original_image = RLImage(
+                BytesIO(original_image_bytes),
+                width=115 * mm,
+                height=78 * mm,
+                kind='proportional',
+            )
+            original_image.hAlign = 'CENTER'
+            story.append(original_image)
 
-        original_image.hAlign = 'CENTER'
-
-        story.append(original_image)
-
+        except Exception:
+            logger.exception(
+                'Could not load original image for report %s',
+                inspection.pk,
+            )
+            story.append(
+                Paragraph(
+                    'Original image unavailable.',
+                    normal_style,
+                )
+            )
     else:
-
         story.append(
             Paragraph(
                 'Original image unavailable.',
@@ -798,32 +865,30 @@ def download_inspection_report(request, pk):
         )
     )
 
-    # Helper to create report images.
+    # Helper to load private Blob images into the in-memory PDF.
     def create_report_image(field, width, height):
 
-        if not field:
+        if not field or not field.name:
             return None
 
         try:
-
-            image_path = field.path
-
-            if not os.path.exists(image_path):
-                return None
+            with field.open('rb') as image_file:
+                image_bytes = image_file.read()
 
             image = RLImage(
-                image_path,
+                BytesIO(image_bytes),
                 width=width,
                 height=height,
                 kind='proportional',
             )
-
             image.hAlign = 'CENTER'
-
             return image
 
-        except (OSError, ValueError):
-
+        except Exception:
+            logger.exception(
+                'Could not load report image: %s',
+                getattr(field, 'name', 'unknown'),
+            )
             return None
 
     # Heatmap and mask.
